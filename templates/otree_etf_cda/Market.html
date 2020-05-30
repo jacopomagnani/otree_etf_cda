@@ -1,0 +1,26 @@
+{% extends "otree_markets/Page.html" %}
+{% load staticfiles otree %}
+
+{% block title %}
+Market
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/static/otree_etf_cda/multiple_asset_text_interface.js"></script>
+{% endblock %}
+
+{% block content %}
+
+    <!-- hide otree title tag to make more room for interface -->
+    <style>
+        h2.otree-title.page-header {
+            display: none;
+        }
+    </style>
+
+    <multiple-asset-text-interface
+        etf-asset-name="{{ Constants.etf_asset_name }}"
+        etf-composition="{{ etf_composition }}"
+    ></multiple-asset-text-interface>
+
+{% endblock %}

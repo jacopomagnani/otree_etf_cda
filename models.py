@@ -1,0 +1,114 @@
+from otree.api import (
+    models, BaseConstants
+)
+from otree_markets import models as markets_models
+from .configmanager import ConfigManager
+
+
+class Constants(BaseConstants):
+    name_in_url = 'otree_etf_cda'
+    players_per_group = None
+    num_rounds = 99 
+
+    # list of capital letters A..Z
+    asset_names = [chr(i) for i in range(65, 91)]
+
+    # the columns of the config CSV and their types
+    # this dict is used by ConfigManager
+    config_fields = {
+        'period_length': int,
+        'num_assets': int,
+        'asset_endowments': str,
+        'cash_endowment': int,
+        'allow_short': bool,
+        'etf_composition': str,
+    }
+
+    # the asset name for the exchange which represents the ETF
+    etf_asset_name = 'Index'
+
+
+class Subsession(markets_models.Subsession):
+
+    def asset_names(self):
+        return Constants.asset_names[:self.config.num_assets]
+    
+    def asset_endowment(self):
+        asset_names = self.asset_names()
+        endowments = [int(e) for e in self.config.asset_endowments.split(' ') if e != '']
+        assert len(asset_names) == len(endowments), 'invalid config. num_assets and asset_endowments must match'
+        return dict(zip(asset_names, endowments))
+    
+    def etf_composition(self):
+        asset_names = self.asset_names()
+        etf_composition = [int(e) for e in self.config.etf_composition.split(' ') if e != '']
+        return dict(zip(asset_names, etf_composition))
+
+    @property
+    def config(self):
+        config_addr = Constants.name_in_url + '/configs/' + self.session.config['config_file']
+        return ConfigManager(config_addr, self.round_number, Constants.config_fields)
+    
+    def allow_short(self):
+        return self.config.allow_short
+
+    def create_exchanges(self):
+        # if the current round number is past the end of the round, don't create any exchanges
+        if self.round_number > self.config.num_rounds:
+            return
+        super().create_exchanges()
+
+        # also create one more exchange for the ETF
+        for group in self.get_groups():
+            group.exchanges.create(asset_name=Constants.etf_asset_name)
+
+
+class Group(markets_models.Group):
+    pass
+
+
+class Player(markets_models.Player):
+
+    def update_holdings_available(self, order_dict, removed):
+        if order_dict['is_bid'] or order_dict['asset_name'] != Constants.etf_asset_name:
+            return super().update_holdings_available(order_dict, removed)
+
+        sign = 1 if removed else -1
+        for asset, amount in self.subsession.etf_composition().items():
+            self.available_assets[asset] += order_dict['volume'] * amount * sign
+
+    def update_holdings_trade(self, price, volume, is_bid, asset_name):
+        if asset_name != Constants.etf_asset_name:
+            return super().update_holdings_trade(price, volume, is_bid, asset_name)
+
+        if is_bid:
+            for asset, amount in self.subsession.etf_composition().items():
+                self.available_assets[asset] += volume * amount
+                self.settled_assets[asset] += volume * amount
+            
+            self.available_cash -= price * volume
+            self.settled_cash -= price * volume
+        else:
+            for asset, amount in self.subsession.etf_composition().items():
+                self.available_assets[asset] -= volume * amount
+                self.settled_assets[asset] -= volume * amount
+            
+            self.available_cash += price * volume
+            self.settled_cash += price * volume
+
+    def check_available(self, is_bid, price, volume, asset_name):
+        if is_bid or asset_name != Constants.etf_asset_name:
+            return super().check_available(is_bid, price, volume, asset_name)
+        if self.subsession.allow_short():
+            return True
+
+        for asset, amount in self.subsession.etf_composition().items():
+            if self.available_assets[asset] < volume:
+                return False
+        return True
+
+    def asset_endowment(self):
+        return self.subsession.asset_endowment()
+    
+    def cash_endowment(self):
+        return self.subsession.config.cash_endowment
