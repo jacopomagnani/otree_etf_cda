@@ -8,6 +8,7 @@ import '/static/otree_markets/trader_state.js';
 
 import './asset_cell.js';
 import './asset_table.js';
+import './disable-interface-overlay.js';
 
 /*
     this component is the main entry point for the text interface frontend. it maintains the market state in
@@ -69,6 +70,9 @@ class MultipleAssetTextInterface extends PolymerElement {
                     margin: 0 5px 0 5px;
                 }
             </style>
+
+            <disable-interface-overlay
+            ></disable-interface-overlay>
 
             <simple-modal
                 id="modal"
