@@ -1,8 +1,9 @@
 from otree.api import (
     models, BaseConstants
 )
+import random
 from otree_markets import models as markets_models
-from .configmanager import ConfigManager
+from .configmanager import ETFConfig
 
 
 class Constants(BaseConstants):
@@ -10,105 +11,82 @@ class Constants(BaseConstants):
     players_per_group = None
     num_rounds = 99 
 
-    # list of capital letters A..Z
-    asset_names = [chr(i) for i in range(65, 91)]
-
-    # the columns of the config CSV and their types
-    # this dict is used by ConfigManager
-    config_fields = {
-        'period_length': int,
-        'num_assets': int,
-        'asset_endowments': str,
-        'cash_endowment': int,
-        'allow_short': bool,
-        'etf_composition': str,
-    }
-
-    # the asset name for the exchange which represents the ETF
-    etf_asset_name = 'Index'
-
 
 class Subsession(markets_models.Subsession):
 
-    def asset_names(self):
-        return Constants.asset_names[:self.config.num_assets]
-    
-    def asset_endowment(self):
-        asset_names = self.asset_names()
-        endowments = [int(e) for e in self.config.asset_endowments.split(' ') if e != '']
-        assert len(asset_names) == len(endowments), 'invalid config. num_assets and asset_endowments must match'
-        return dict(zip(asset_names, endowments))
-    
-    def etf_composition(self):
-        asset_names = self.asset_names()
-        etf_composition = [int(e) for e in self.config.etf_composition.split(' ') if e != '']
-        return dict(zip(asset_names, etf_composition))
-
     @property
     def config(self):
-        config_addr = Constants.name_in_url + '/configs/' + self.session.config['config_file']
-        return ConfigManager(config_addr, self.round_number, Constants.config_fields)
+        config_name = self.session.config['config_file']
+        return ETFConfig.get(config_name, self.round_number)
+    
+    def asset_names(self):
+        return list(self.config.asset_structure.keys())
     
     def allow_short(self):
         return self.config.allow_short
+    
+    def do_grouping(self):
+        group_matrix = []
+        players = self.get_players()
+        ppg = self.config.players_per_group
+        for i in range(0, len(players), ppg):
+            group_matrix.append(players[i:i+ppg])
+        self.set_group_matrix(group_matrix)
 
-    def create_exchanges(self):
-        # if the current round number is past the end of the round, don't create any exchanges
+    def creating_session(self):
         if self.round_number > self.config.num_rounds:
             return
-        super().create_exchanges()
-
-        # also create one more exchange for the ETF
-        for group in self.get_groups():
-            group.exchanges.create(asset_name=Constants.etf_asset_name)
+        self.do_grouping()
+        return super().creating_session()
 
 
 class Group(markets_models.Group):
-    pass
+
+    realized_state = models.StringField()
+
+    def period_length(self):
+        return self.subsession.config.period_length
+    
+    def do_realized_state_draw(self):
+        states = self.subsession.config.states
+        state_names = list(states.keys())
+        weights = [e['prob_weight'] for e in states.values()]
+        self.realized_state = random.choices(state_names, weights)[0]
+    
+    def set_payoffs(self):
+        self.do_realized_state_draw()
+        for player in self.get_players():
+            player.set_payoff()
 
 
 class Player(markets_models.Player):
 
-    def update_holdings_available(self, order_dict, removed):
-        if order_dict['is_bid'] or order_dict['asset_name'] != Constants.etf_asset_name:
-            return super().update_holdings_available(order_dict, removed)
-
-        sign = 1 if removed else -1
-        for asset, amount in self.subsession.etf_composition().items():
-            self.available_assets[asset] += order_dict['volume'] * amount * sign
-
-    def update_holdings_trade(self, price, volume, is_bid, asset_name):
-        if asset_name != Constants.etf_asset_name:
-            return super().update_holdings_trade(price, volume, is_bid, asset_name)
-
-        if is_bid:
-            for asset, amount in self.subsession.etf_composition().items():
-                self.available_assets[asset] += volume * amount
-                self.settled_assets[asset] += volume * amount
-            
-            self.available_cash -= price * volume
-            self.settled_cash -= price * volume
-        else:
-            for asset, amount in self.subsession.etf_composition().items():
-                self.available_assets[asset] -= volume * amount
-                self.settled_assets[asset] -= volume * amount
-            
-            self.available_cash += price * volume
-            self.settled_cash += price * volume
-
-    def check_available(self, is_bid, price, volume, asset_name):
-        if is_bid or asset_name != Constants.etf_asset_name:
-            return super().check_available(is_bid, price, volume, asset_name)
-        if self.subsession.allow_short():
-            return True
-
-        for asset, amount in self.subsession.etf_composition().items():
-            if self.available_assets[asset] < volume:
-                return False
-        return True
-
     def asset_endowment(self):
-        return self.subsession.asset_endowment()
+        endowments = {}
+        for asset_name, structure in self.subsession.config.asset_structure.items():
+            endowment = structure['endowment']
+            if isinstance(endowment, list):
+                endowments[asset_name] = int(endowment[self.id_in_group-1])
+            else:
+                endowments[asset_name] = int(endowment)
+        return endowments
     
     def cash_endowment(self):
-        return self.subsession.config.cash_endowment
+        endowment = self.subsession.config.cash_endowment
+        if isinstance(endowment, list):
+            return int(endowment[self.id_in_group-1])
+        else:
+            return int(endowment)
+    
+    def set_payoff(self):
+        realized_state = self.group.realized_state
+        asset_structure = self.subsession.config.asset_structure
+        for asset_name, structure in asset_structure.items():
+            if structure['is_etf']:
+                asset_value = 0
+                for component_asset, weight in structure['etf_weights'].items():
+                    asset_value += asset_structure[component_asset]['payoffs'][realized_state] * weight
+                self.payoff += asset_value * self.settled_assets[asset_name]
+            else:
+                asset_value = structure['payoffs'][realized_state]
+                self.payoff += asset_value * self.settled_assets[asset_name]

@@ -4,10 +4,10 @@ import '/static/otree-redwood/src/redwood-period/redwood-period.js';
 
 import '/static/otree_markets/simple_modal.js';
 import '/static/otree_markets/event_log.js';
+import '/static/otree_markets/trader_state.js';
 
 import './asset_cell.js';
 import './asset_table.js';
-import './trader_state_index.js';
 
 /*
     this component is the main entry point for the text interface frontend. it maintains the market state in
@@ -18,8 +18,6 @@ class MultipleAssetTextInterface extends PolymerElement {
 
     static get properties() {
         return {
-            etfAssetName: String,
-            etfComposition: Object,
             timeRemaining: Number,
             bids: Array,
             asks: Array,
@@ -75,9 +73,7 @@ class MultipleAssetTextInterface extends PolymerElement {
             <simple-modal
                 id="modal"
             ></simple-modal>
-            <trader-state-etf
-                etf-asset-name="[[etfAssetName]]"
-                etf-composition="[[etfComposition]]"
+            <trader-state
                 id="trader_state"
                 bids="{{bids}}"
                 asks="{{asks}}"
@@ -90,7 +86,7 @@ class MultipleAssetTextInterface extends PolymerElement {
                 on-confirm-trade="_confirm_trade"
                 on-confirm-cancel="_confirm_cancel"
                 on-error="_handle_error"
-            ></trader-state-etf>
+            ></trader-state>
 
             <div class="full-width">
                 <div class="main-container">
@@ -107,17 +103,6 @@ class MultipleAssetTextInterface extends PolymerElement {
                             ></asset-cell>
                         </div>
                     </template>
-                    <div>
-                        <asset-cell
-                            asset-name="[[etfAssetName]]"
-                            bids="[[bids]]"
-                            asks="[[asks]]"
-                            trades="[[trades]]"
-                            on-order-entered="_order_entered"
-                            on-order-canceled="_order_canceled"
-                            on-order-accepted="_order_accepted"
-                        ></asset-cell>
-                    </div>
                 </div>
                 <div class="info-container">
                     <div>
