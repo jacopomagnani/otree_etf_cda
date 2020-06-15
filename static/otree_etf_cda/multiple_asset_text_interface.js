@@ -19,6 +19,8 @@ class MultipleAssetTextInterface extends PolymerElement {
 
     static get properties() {
         return {
+            assetStructure: Object,
+            stateProbabilities: Object,
             timeRemaining: Number,
             bids: Array,
             asks: Array,
@@ -29,7 +31,7 @@ class MultipleAssetTextInterface extends PolymerElement {
             availableCash: Number,
             assetNames: {
                 type: Array,
-                computed: '_compute_asset_names(availableAssetsDict)',
+                computed: '_compute_asset_names(assetStructure)',
             },
         };
     }
@@ -66,8 +68,13 @@ class MultipleAssetTextInterface extends PolymerElement {
                     padding: 0 5px 0 5px;
                 }
                 .info-container > div {
-                    flex: 1;
                     margin: 0 5px 0 5px;
+                }
+                .info-container > div:first-child {
+                    flex: 2 0 0;
+                }
+                .info-container > div:last-child {
+                    flex: 1 0 0;
                 }
             </style>
 
@@ -111,6 +118,8 @@ class MultipleAssetTextInterface extends PolymerElement {
                 <div class="info-container">
                     <div>
                         <asset-table
+                            asset-structure="[[assetStructure]]"
+                            state-probabilities="[[stateProbabilities]]"
                             time-remaining="[[timeRemaining]]"
                             settled-assets-dict="[[settledAssetsDict]]"
                             available-assets-dict="[[availableAssetsDict]]"
@@ -131,8 +140,8 @@ class MultipleAssetTextInterface extends PolymerElement {
         `;
     }
 
-    _compute_asset_names(availableAssetsDict) {
-        return Object.keys(availableAssetsDict);
+    _compute_asset_names(assetStructure) {
+        return Object.keys(assetStructure);
     }
 
     // triggered when this player enters an order
@@ -166,7 +175,7 @@ class MultipleAssetTextInterface extends PolymerElement {
         if (order.pcode == this.pcode)
             return;
 
-        this.$.modal.modal_text = `Do you want to ${order.is_bid ? 'buy' : 'sell'} asset ${order.asset_name} for $${order.price}?`
+        this.$.modal.modal_text = `Do you want to ${order.is_bid ? 'sell' : 'buy'} asset ${order.asset_name} for $${order.price}?`
         this.$.modal.on_close_callback = (accepted) => {
             if (!accepted)
                 return;

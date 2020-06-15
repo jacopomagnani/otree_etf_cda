@@ -2,10 +2,21 @@ import { html, PolymerElement } from '/static/otree-redwood/node_modules/@polyme
 import '/static/otree-redwood/node_modules/@polymer/polymer/lib/elements/dom-repeat.js';
 import '/static/otree-redwood/src/otree-constants/otree-constants.js';
 
+function gcd(a, b) {
+    while (a % b > 0) {
+        const tmp = a % b;
+        a = b;
+        b = tmp;
+    }
+    return b;
+}
+
 class AssetTable extends PolymerElement {
 
     static get properties() {
         return {
+            assetStructure: Object,
+            stateProbabilities: Object,
             timeRemaining: Number,
             settledAssetsDict: Object,
             availableAssetsDict: Object,
@@ -15,7 +26,11 @@ class AssetTable extends PolymerElement {
             asks: Array,
             assetNames: {
                 type: Array,
-                computed: '_computeAssetNames(availableAssetsDict)',
+                computed: '_computeAssetNames(assetStructure)',
+            },
+            stateNames: {
+                type: Array,
+                computed: '_computeStateNames(stateProbabilities)',
             },
             requestedAssets: {
                 type: Object,
@@ -42,15 +57,19 @@ class AssetTable extends PolymerElement {
                     box-sizing: border-box;
                 }
                 .container {
+                    display: flex;
                     border: 1px solid black;
                     height: 100%;
-                    padding: 20px;
+                    padding: 10px;
+                }
+                .container > div {
+                    display: flex;
+                    flex-direction: column;
+                    margin-right: 10px;
                 }
 
                 .table {
-                    width: 30em;
                     text-align: center;
-                    margin-bottom: 20px;
                 }
                 .table > div {
                     display: flex;
@@ -62,6 +81,25 @@ class AssetTable extends PolymerElement {
                     border-bottom: 1px solid black;
                     font-weight: bold;
                 }
+
+                .asset-table {
+                    width: 30em;
+                }
+
+                .aligned-text {
+                    text-align: center;
+                    width: 100%;
+                }
+                .aligned-text span {
+                    display: inline-block;
+                    width: 45%;
+                }
+                .aligned-text span:first-child {
+                    text-align: right;
+                }
+                .aligned-text span:last-child {
+                    text-align: left;
+                }
             </style>
 
             <otree-constants
@@ -69,35 +107,63 @@ class AssetTable extends PolymerElement {
             ></otree-constants>
 
             <div class="container">
-                <div class="table">
-                    <div class="header">
-                        <span>Asset</span>
-                        <span>Available</span>
-                        <span>Settled</span>
-                        <span>Requested</span>
-                        <span>Offered</span>
-                    </div>
-                    <template is="dom-repeat" items="{{assetNames}}">
-                        <div>
-                            <span>[[item]]</span>
-                            <span>[[_getHeldAsset(item, availableAssetsDict.*)]]</span>
-                            <span>[[_getHeldAsset(item, settledAssetsDict.*)]]</span>
-                            <span>[[_getTradedAsset(item, requestedAssets.*)]]</span>
-                            <span>[[_getTradedAsset(item, offeredAssets.*)]]</span>
+                <div>
+                    <div class="table asset-table">
+                        <div class="header">
+                            <span>Asset</span>
+                            <span>Available</span>
+                            <span>Settled</span>
+                            <span>Requested</span>
+                            <span>Offered</span>
                         </div>
-                    </template>
+                        <template is="dom-repeat" items="{{assetNames}}" as="assetName">
+                            <div>
+                                <span>[[assetName]]</span>
+                                <span>[[_getHeldAsset(assetName, availableAssetsDict.*)]]</span>
+                                <span>[[_getHeldAsset(assetName, settledAssetsDict.*)]]</span>
+                                <span>[[_getTradedAsset(assetName, requestedAssets.*)]]</span>
+                                <span>[[_getTradedAsset(assetName, offeredAssets.*)]]</span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="aligned-text">
+                        <div>
+                            <span>Available Cash: </span>
+                            <span>$[[availableCash]]</span>
+                        </div>
+                        <div>
+                            <span>Settled Cash: </span>
+                            <span>$[[settledCash]]</span>
+                        </div>
+                        <div>
+                            <span>Time Remaining: </span>
+                            <span>[[timeRemaining]]</span>
+                        </div>
+                    </div>
                 </div>
                 <div>
-                    <span>Available Cash: </span>
-                    <span>$[[availableCash]]</span>
-                </div>
-                <div>
-                    <span>Settled Cash: </span>
-                    <span>$[[settledCash]]</span>
-                </div>
-                <div>
-                    <span>Time Remaining: </span>
-                    <span>[[timeRemaining]]</span>
+                    <div class="table" style="width:20em;">
+                        <div class="header">
+                            <span></span>
+                            <template is="dom-repeat" items="{{stateNames}}" as="state">
+                                <span>[[state]]</span>
+                            </template>
+                        </div>
+                        <div>
+                            <span>Probability</span>
+                            <template is="dom-repeat" items="{{stateNames}}" as="state">
+                                <span>[[_getProbability(state, stateProbabilities)]]</span>
+                            </template>
+                        </div>
+                        <template is="dom-repeat" items="{{assetNames}}" as="assetName">
+                            <div>
+                                <span>[[assetName]] Payoff</span>
+                                <template is="dom-repeat" items="{{stateNames}}" as="state">
+                                    <span>[[_getPayoff(assetName, state, assetStructure)]]</span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         `;
@@ -108,8 +174,12 @@ class AssetTable extends PolymerElement {
         this.pcode = this.$.constants.participantCode;
     }
 
-    _computeAssetNames(availableAssetsDict) {
-        return Object.keys(availableAssetsDict);
+    _computeAssetNames(assetStructure) {
+        return Object.keys(assetStructure);
+    }
+
+    _computeStateNames(stateProbabilities) {
+        return Object.keys(stateProbabilities);
     }
 
     _computeRequestedAssets(assetNames, bids) {
@@ -186,7 +256,38 @@ class AssetTable extends PolymerElement {
 
     _getTradedAsset(asset_name, assets) {
         const offered = assets.base ? assets.base[asset_name] : 0;
-        return offered > 0 ? '-' + offered : '-';
+        return offered > 0 ?  offered : '-';
+    }
+
+    _getProbability(state, stateProbabilities) {
+        if (!stateProbabilities)
+            return '';
+        let num = stateProbabilities[state];
+        if (num == 0)
+            return '0';
+        let denom = Object.values(stateProbabilities).reduce((a, b) => a + b, 0);
+        if (num == denom)
+            return '1';
+        const divisor = gcd(num, denom);
+        num /= divisor;
+        denom /= divisor;
+        return `${num}/${denom}`;
+    }
+
+    _getPayoff(assetName, state, assetStructure) {
+        if (!assetStructure)
+            return;
+        const structure = assetStructure[assetName];
+        if (structure.is_etf) {
+            let payoff = 0;
+            for (const [componentAsset, weight] of Object.entries(structure.etf_weights)) {
+                payoff += assetStructure[componentAsset].payoffs[state] * weight;
+            }
+            return payoff;
+        }
+        else {
+            return assetStructure[assetName].payoffs[state];
+        }
     }
 }
 
