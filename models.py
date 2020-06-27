@@ -4,6 +4,7 @@ from otree.api import (
 import random
 from otree_markets import models as markets_models
 from .configmanager import ETFConfig
+from .bots import ETFMakerBot, pcode_is_bot
 
 
 class Constants(BaseConstants):
@@ -24,7 +25,7 @@ class Subsession(markets_models.Subsession):
     
     def allow_short(self):
         return self.config.allow_short
-    
+
     def do_grouping(self):
         group_matrix = []
         players = self.get_players()
@@ -37,12 +38,30 @@ class Subsession(markets_models.Subsession):
         if self.round_number > self.config.num_rounds:
             return
         self.do_grouping()
+        for group in self.get_groups():
+            group.create_bots()
         return super().creating_session()
 
 
 class Group(markets_models.Group):
 
     realized_state = models.StringField()
+
+    def get_player(self, pcode):
+        if pcode_is_bot(pcode):
+            return None
+        else:
+            return super().get_player(pcode)
+
+    def create_bots(self):
+        for asset_name, structure in self.subsession.config.asset_structure.items():
+            if structure['is_etf']:
+                ETFMakerBot.objects.create(
+                    group=self,
+                    profit=0,
+                    etf_name=asset_name,
+                    etf_composition=structure['etf_weights']
+                )
 
     def period_length(self):
         return self.subsession.config.period_length
@@ -57,6 +76,21 @@ class Group(markets_models.Group):
         self.do_realized_state_draw()
         for player in self.get_players():
             player.set_payoff()
+
+    def confirm_enter(self, order_dict):
+        super().confirm_enter(order_dict)
+        for bot in self.bots.all():
+            bot.on_order_entered(order_dict)
+
+    def handle_trade(self, timestamp, asset_name, taking_order, making_orders):
+        super().handle_trade(timestamp, asset_name, taking_order, making_orders)
+        for bot in self.bots.all():
+            bot.on_trade(timestamp, asset_name, taking_order, making_orders)
+    
+    def confirm_cancel(self, order_dict):
+        super().confirm_cancel(order_dict)
+        for bot in self.bots.all():
+            bot.on_order_canceled(order_dict)
 
 
 class Player(markets_models.Player):
