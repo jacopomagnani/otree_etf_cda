@@ -2,13 +2,13 @@ import { html, PolymerElement } from '/static/otree-redwood/node_modules/@polyme
 import '/static/otree-redwood/node_modules/@polymer/polymer/lib/elements/dom-repeat.js';
 import '/static/otree-redwood/src/redwood-period/redwood-period.js';
 
+import '/static/otree_markets/trader_state.js';
 import '/static/otree_markets/simple_modal.js';
 import '/static/otree_markets/event_log.js';
-import '/static/otree_markets/trader_state.js';
+import '/static/otree_markets/disable-interface-overlay.js';
 
 import './asset_cell.js';
 import './asset_table.js';
-import './disable-interface-overlay.js';
 
 /*
     this component is the main entry point for the text interface frontend. it maintains the market state in
