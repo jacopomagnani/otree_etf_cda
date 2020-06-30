@@ -23,13 +23,13 @@ class BaseBot(models.Model):
     def pcode(self):
         return 'bot-{}-{}'.format(type(self).__name__, self.id)
     
-    def on_order_entered(self, order_dict):
+    def on_order_entered(self, order):
         pass
 
-    def on_trade(self, timestamp, asset_name, taking_order, making_orders):
+    def on_trade(self, trade):
         pass
 
-    def on_order_canceled(self, order_dict):
+    def on_order_canceled(self, order):
         pass
 
 
@@ -61,32 +61,32 @@ class ETFMakerBot(BaseBot):
     ask_position = models.IntegerField(null=True)
     '''the price of the bot's current ask in the etf (not including profit) or None if no ask is currently entered'''
 
-    def on_order_entered(self, order_dict):
-        if order_dict['pcode'] == self.pcode:
-            if order_dict['is_bid']:
-                self.active_bid_id = order_dict['order_id']
+    def on_order_entered(self, order):
+        if order.pcode == self.pcode:
+            if order.is_bid:
+                self.active_bid_id = order.id
             else:
-                self.active_ask_id = order_dict['order_id']
+                self.active_ask_id = order.id
             self.save()
             return
-        elif order_dict['asset_name'] not in self.etf_composition:
+        elif order.exchange.asset_name not in self.etf_composition:
             return
 
-        if order_dict['is_bid']:
+        if order.is_bid:
             self.reevaluate_bid_position()
         else:
             self.reevaluate_ask_position()
 
-    def on_trade(self, timestamp, asset_name, taking_order, making_orders):
-        if taking_order['pcode'] == self.pcode:
+    def on_trade(self, trade):
+        if trade.taking_order.pcode == self.pcode:
             return
 
-        my_making_orders = [o for o in making_orders if o['pcode'] == self.pcode]
+        my_making_orders = [o for o in trade.making_orders if o.pcode == self.pcode]
         if len(my_making_orders) != 0:
             assert len(my_making_orders) == 1, 'bot had more than one simultaneous transaction'
             assert asset_name == self.etf_name, 'bot was maker in non-etf market'
 
-            is_bid = my_making_orders[0]['is_bid']
+            is_bid = my_making_orders[0].is_bid
             if is_bid:
                 self.active_bid_id = None
                 self.bid_position = None
@@ -103,18 +103,18 @@ class ETFMakerBot(BaseBot):
         self.reevaluate_bid_position()
         self.reevaluate_ask_position()
 
-    def on_order_canceled(self, order_dict):
-        if order_dict['pcode'] == self.pcode:
-            if order_dict['is_bid']:
+    def on_order_canceled(self, order):
+        if order.pcode == self.pcode:
+            if order.is_bid:
                 self.active_bid_id = None
             else:
                 self.active_ask_id = None
             self.save()
             return
-        elif order_dict['asset_name'] not in self.etf_composition:
+        elif order.exchange.asset_name not in self.etf_composition:
             return
 
-        if order_dict['is_bid']:
+        if order.is_bid:
             self.reevaluate_bid_position()
         else:
             self.reevaluate_ask_position()
