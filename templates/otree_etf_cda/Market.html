@@ -6,7 +6,7 @@ Market
 {% endblock %}
 
 {% block scripts %}
-    <script type="module" src="/static/otree_etf_cda/multiple_asset_text_interface.js"></script>
+    <script type="module" src="/static/otree_etf_cda/etf_interface.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -18,9 +18,9 @@ Market
         }
     </style>
 
-    <multiple-asset-text-interface
+    <etf-interface
         asset-structure="{{ asset_structure }}"
         state-probabilities="{{ state_probabilities }}"
-    ></multiple-asset-text-interface>
+    ></etf-interface>
 
 {% endblock %}

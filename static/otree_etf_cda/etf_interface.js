@@ -10,12 +10,7 @@ import '/static/otree_markets/disable-interface-overlay.js';
 import './asset_cell.js';
 import './asset_table.js';
 
-/*
-    this component is the main entry point for the text interface frontend. it maintains the market state in
-    the `bids`, `asks` and `trades` array properties and coordinates communication with the backend
-*/
-
-class MultipleAssetTextInterface extends PolymerElement {
+class ETFInterface extends PolymerElement {
 
     static get properties() {
         return {
@@ -211,4 +206,4 @@ class MultipleAssetTextInterface extends PolymerElement {
     }
 }
 
-window.customElements.define('multiple-asset-text-interface', MultipleAssetTextInterface);
+window.customElements.define('etf-interface', ETFInterface);
