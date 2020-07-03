@@ -63,8 +63,8 @@ class Group(markets_models.Group):
                     etf_composition=structure['etf_weights']
                 )
 
-    # def period_length(self):
-    #     return self.subsession.config.period_length
+    def period_length(self):
+        return self.subsession.config.period_length
     
     def do_realized_state_draw(self):
         states = self.subsession.config.states
