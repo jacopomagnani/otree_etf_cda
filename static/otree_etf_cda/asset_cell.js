@@ -111,12 +111,12 @@ class AssetCell extends PolymerElement {
                 <div class="buttons">
                     <div>
                         <label for="bid_price">Price</label>
-                        <input id="bid_price" type="number" min="0" step="0.001">
+                        <input id="bid_price" type="number" min="0" step="[[price_step]]">
                         <button type="button" on-click="_enter_order" value="bid">Buy</button>
                     </div>
                     <div>
                         <label for="ask_price">Price</label>
-                        <input id="ask_price" type="number" min="0" step="0.001">
+                        <input id="ask_price" type="number" min="0" step="[[price_step]]">
                         <button type="button" on-click="_enter_order" value="ask">Sell</button>
                     </div>
                 </div>
@@ -127,6 +127,7 @@ class AssetCell extends PolymerElement {
     ready() {
         super.ready();
         this.pcode = this.$.constants.participantCode;
+        this.price_step = 1 / this.$.currency_scaler.factor;
 
         this.orderDisplayFormat = order => {
             const price = this.$.currency_scaler.toHumanReadable(order.price);
