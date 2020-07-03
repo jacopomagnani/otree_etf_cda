@@ -7,6 +7,8 @@ Market
 
 {% block scripts %}
     <script type="module" src="/static/otree_etf_cda/etf_interface.js"></script>
+    <script type="module" src="/static/otree_etf_cda/currency_scaler.js"></script>
+    <script type="module" src="/static/otree_markets/disable_interface_overlay.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -17,6 +19,13 @@ Market
             display: none;
         }
     </style>
+
+    <disable-interface-overlay
+    ></disable-interface-overlay>
+
+    <currency-scaler
+        factor="{{ subsession.config.currency_scale }}"
+    ></currency-scaler>
 
     <etf-interface
         asset-structure="{{ asset_structure }}"

@@ -63,8 +63,8 @@ class Group(markets_models.Group):
                     etf_composition=structure['etf_weights']
                 )
 
-    def period_length(self):
-        return self.subsession.config.period_length
+    # def period_length(self):
+    #     return self.subsession.config.period_length
     
     def do_realized_state_draw(self):
         states = self.subsession.config.states
@@ -106,11 +106,14 @@ class Player(markets_models.Player):
         return endowments
     
     def cash_endowment(self):
-        endowment = self.subsession.config.cash_endowment
-        if isinstance(endowment, list):
-            return int(endowment[self.id_in_group-1])
+        config = self.subsession.config
+        if isinstance(config.cash_endowment, list):
+            endowment = int(config.cash_endowment[self.id_in_group-1])
         else:
-            return int(endowment)
+            endowment = int(config.cash_endowment)
+        # rescale cash endowment by currency scale so that config cash endowment
+        # can be in human-readable form
+        return endowment * config.currency_scale
     
     def set_payoff(self):
         realized_state = self.group.realized_state

@@ -2,6 +2,9 @@ import { html, PolymerElement } from '/static/otree-redwood/node_modules/@polyme
 import '/static/otree-redwood/node_modules/@polymer/polymer/lib/elements/dom-repeat.js';
 import '/static/otree-redwood/src/otree-constants/otree-constants.js';
 
+import './currency_scaler.js';
+
+// calc greatest common denominator of two numbers
 function gcd(a, b) {
     while (a % b > 0) {
         const tmp = a % b;
@@ -105,6 +108,9 @@ class AssetTable extends PolymerElement {
             <otree-constants
                 id="constants"
             ></otree-constants>
+            <currency-scaler
+                id="currency_scaler"
+            ></currency-scaler>
 
             <div class="container">
                 <div>
@@ -129,11 +135,11 @@ class AssetTable extends PolymerElement {
                     <div class="aligned-text">
                         <div>
                             <span>Available Cash: </span>
-                            <span>$[[availableCash]]</span>
+                            <span>$[[_currencyToHumanReadable(availableCash)]]</span>
                         </div>
                         <div>
                             <span>Settled Cash: </span>
-                            <span>$[[settledCash]]</span>
+                            <span>$[[_currencyToHumanReadable(settledCash)]]</span>
                         </div>
                         <div>
                             <span>Time Remaining: </span>
@@ -288,6 +294,10 @@ class AssetTable extends PolymerElement {
         else {
             return assetStructure[assetName].payoffs[state];
         }
+    }
+
+    _currencyToHumanReadable(c) {
+        return this.$.currency_scaler.toHumanReadable(c);
     }
 }
 

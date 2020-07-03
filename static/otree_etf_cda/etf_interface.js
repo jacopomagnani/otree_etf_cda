@@ -5,7 +5,6 @@ import '/static/otree-redwood/src/redwood-period/redwood-period.js';
 import '/static/otree_markets/trader_state.js';
 import '/static/otree_markets/simple_modal.js';
 import '/static/otree_markets/event_log.js';
-import '/static/otree_markets/disable-interface-overlay.js';
 
 import './asset_cell.js';
 import './asset_table.js';
@@ -16,6 +15,7 @@ class ETFInterface extends PolymerElement {
         return {
             assetStructure: Object,
             stateProbabilities: Object,
+            currencyDisplayScale: Number,
             timeRemaining: Number,
             bids: Array,
             asks: Array,
@@ -72,9 +72,6 @@ class ETFInterface extends PolymerElement {
                     flex: 1 0 0;
                 }
             </style>
-
-            <disable-interface-overlay
-            ></disable-interface-overlay>
 
             <simple-modal
                 id="modal"

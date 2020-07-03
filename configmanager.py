@@ -9,13 +9,28 @@ from collections import namedtuple
 CacheEntry = namedtuple('CacheEntry', ['entry', 'mtime'])
 
 class ETFConfig():
+    '''this class manages configurations for the etf market experiment
+    
+    it takes two types of config files: a "session config" CSV which defines the configuration for an entire session and a "round config"
+    YAML file which defines the configuration for a single round.
+    
+    the session config CSV only has one required column: "round_config". this column gives the name of the round config file used to configure that round.
+    optionally, other columns can be added to override values set in the round config. for example, adding a "period_length" column in the session config
+    and giving it a value in some row overrides the length of the period for that one round. this is convenient as it means that you don't have to rewrite
+    round configs for rounds with only a few simple differences between them. just a warning though, this probably won't work for the asset_structure or state
+    config fields.
+
+    the structure of the round config YAML files is complex. for a reference of all the required fields, just look at demo.yaml in configs/round_configs.
+    '''
 
     SESSION_CONFIG_PATH = 'otree_etf_cda/configs/session_configs/'
     ROUND_CONFIG_PATH = 'otree_etf_cda/configs/round_configs/'
 
     # these dicts store serialized config data so we don't have to hit the disk every time
     # we want a config field. they map a config name to a tuple containing the config entry
-    # and the time that config was last modified
+    # and the time that config was last modified.
+    # the modified time is used so that if a config is changed while oTree is running, the cache
+    # is cleared and the new version of the config is retreived.
     session_config_cache: Dict[str, CacheEntry] = {}
     round_config_cache:   Dict[str, CacheEntry] = {}
     
