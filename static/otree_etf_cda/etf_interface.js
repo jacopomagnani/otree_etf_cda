@@ -141,7 +141,7 @@ class ETFInterface extends PolymerElement {
     _order_entered(event) {
         const order = event.detail;
         if (isNaN(order.price)) {
-            this.$.log.error('Invalid order entered');
+            this.$.log.info('Invalid order entered');
             return;
         }
         this.$.trader_state.enter_order(order.price, 1, order.is_bid, order.asset_name);
@@ -199,7 +199,7 @@ class ETFInterface extends PolymerElement {
     // handle an error sent from the backend
     _handle_error(event) {
         const message = event.detail;
-        this.$.log.error(message);
+        this.$.log.info(message);
     }
 }
 
