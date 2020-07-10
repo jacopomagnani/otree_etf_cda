@@ -8,6 +8,7 @@ import '/static/otree_markets/event_log.js';
 
 import './asset_cell.js';
 import './asset_table.js';
+import './currency_scaler.js';
 
 class ETFInterface extends PolymerElement {
 
@@ -90,6 +91,9 @@ class ETFInterface extends PolymerElement {
                 on-confirm-cancel="_confirm_cancel"
                 on-error="_handle_error"
             ></trader-state>
+            <currency-scaler
+                id="currency_scaler"
+            ></currency-scaler>
 
             <div class="full-width">
                 <div class="main-container">
@@ -167,7 +171,8 @@ class ETFInterface extends PolymerElement {
         if (order.pcode == this.pcode)
             return;
 
-        this.$.modal.modal_text = `Do you want to ${order.is_bid ? 'sell' : 'buy'} asset ${order.asset_name} for $${order.price}?`
+        const price_scaled = this.$.currency_scaler.toHumanReadable(order.price);
+        this.$.modal.modal_text = `Do you want to ${order.is_bid ? 'sell' : 'buy'} asset ${order.asset_name} for $${price_scaled}?`
         this.$.modal.on_close_callback = (accepted) => {
             if (!accepted)
                 return;
@@ -183,8 +188,10 @@ class ETFInterface extends PolymerElement {
         // since we're doing unit volume, there can only ever be one making order
         const all_orders = [trade.making_orders[0], trade.taking_order];
         for (let order of all_orders) {
-            if (order.pcode == this.pcode)
-                this.$.log.info(`You ${order.is_bid ? 'bought' : 'sold'} asset ${order.asset_name} for $${trade.making_orders[0].price}`);
+            if (order.pcode == this.pcode) {
+                const price_scaled = this.$.currency_scaler.toHumanReadable(trade.making_orders[0].price);
+                this.$.log.info(`You ${order.is_bid ? 'bought' : 'sold'} asset ${order.asset_name} for $${price_scaled}`);
+            }
         }
     }
 
