@@ -1,5 +1,6 @@
 from django.db import models
 from jsonfield import JSONField
+from otree_markets.exchange.base import Order
 
 def pcode_is_bot(pcode):
     '''this method returns true if its argument is a pcode associated with a bot'''
@@ -81,13 +82,12 @@ class ETFMakerBot(BaseBot):
         if trade.taking_order.pcode == self.pcode:
             return
 
-        my_making_orders = [o for o in trade.making_orders if o.pcode == self.pcode]
-        if len(my_making_orders) != 0:
-            assert len(my_making_orders) == 1, 'bot had more than one simultaneous transaction'
-            assert asset_name == self.etf_name, 'bot was maker in non-etf market'
-
-            is_bid = my_making_orders[0].is_bid
-            if is_bid:
+        try:
+            my_making_order = trade.making_orders.get(pcode=self.pcode)
+        except Order.DoesNotExist:
+            pass
+        else:
+            if my_making_order.is_bid:
                 self.active_bid_id = None
                 self.bid_position = None
             else:
@@ -98,7 +98,7 @@ class ETFMakerBot(BaseBot):
             for component_asset, weight in self.etf_composition.items():
                 exchange = self.group.exchanges.get(asset_name=component_asset)
                 for _ in range(weight):
-                    exchange.enter_market_order(1, not is_bid, self.pcode)
+                    exchange.enter_market_order(1, not my_making_order.is_bid, self.pcode)
             
         self.reevaluate_bid_position()
         self.reevaluate_ask_position()
@@ -124,7 +124,7 @@ class ETFMakerBot(BaseBot):
         if self.active_bid_id is None:
             return
         exchange = self.group.exchanges.get(asset_name=self.etf_name)
-        exchange.cancel_order(is_bid=True, order_id=self.active_bid_id)
+        exchange.cancel_order(self.active_bid_id)
         self.active_bid_id = None
 
     def reevaluate_bid_position(self):
@@ -158,7 +158,7 @@ class ETFMakerBot(BaseBot):
         if self.active_ask_id is None:
             return
         exchange = self.group.exchanges.get(asset_name=self.etf_name)
-        exchange.cancel_order(is_bid=False, order_id=self.active_ask_id)
+        exchange.cancel_order(self.active_ask_id)
         self.active_ask_id = None
 
     def reevaluate_ask_position(self):

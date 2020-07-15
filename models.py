@@ -80,20 +80,20 @@ class Group(markets_models.Group):
         for player in self.get_players():
             player.set_payoff()
 
-    def confirm_enter(self, order_dict):
-        super().confirm_enter(order_dict)
+    def confirm_enter(self, order):
+        super().confirm_enter(order)
         for bot in self.bots.all():
-            bot.on_order_entered(order_dict)
+            bot.on_order_entered(order)
 
-    def handle_trade(self, timestamp, asset_name, taking_order, making_orders):
-        super().handle_trade(timestamp, asset_name, taking_order, making_orders)
+    def confirm_trade(self, trade):
+        super().confirm_trade(trade)
         for bot in self.bots.all():
-            bot.on_trade(timestamp, asset_name, taking_order, making_orders)
+            bot.on_trade(trade)
     
-    def confirm_cancel(self, order_dict):
-        super().confirm_cancel(order_dict)
+    def confirm_cancel(self, order):
+        super().confirm_cancel(order)
         for bot in self.bots.all():
-            bot.on_order_canceled(order_dict)
+            bot.on_order_canceled(order)
 
 
 class Player(markets_models.Player):
