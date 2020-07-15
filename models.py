@@ -27,9 +27,12 @@ class Subsession(markets_models.Subsession):
         return self.config.allow_short
 
     def do_grouping(self):
+        ppg = self.config.players_per_group
+        # if ppg is None, just use the default grouping where everyone is in one group
+        if not ppg:
+            return
         group_matrix = []
         players = self.get_players()
-        ppg = self.config.players_per_group
         for i in range(0, len(players), ppg):
             group_matrix.append(players[i:i+ppg])
         self.set_group_matrix(group_matrix)
@@ -100,7 +103,10 @@ class Player(markets_models.Player):
         for asset_name, structure in self.subsession.config.asset_structure.items():
             endowment = structure['endowment']
             if isinstance(endowment, list):
-                endowments[asset_name] = int(endowment[self.id_in_group-1])
+                # calculate index into endowments mod length of endowment
+                # this way if there are more players than the length of the array, we wrap back around
+                index = (self.id_in_group-1) % len(endowment)
+                endowments[asset_name] = int(endowment[index])
             else:
                 endowments[asset_name] = int(endowment)
         return endowments
@@ -108,7 +114,8 @@ class Player(markets_models.Player):
     def cash_endowment(self):
         config = self.subsession.config
         if isinstance(config.cash_endowment, list):
-            endowment = int(config.cash_endowment[self.id_in_group-1])
+            index = (self.id_in_group-1) % len(endowment)
+            endowment = int(config.cash_endowment[index])
         else:
             endowment = int(config.cash_endowment)
         # rescale cash endowment by currency scale so that config cash endowment

@@ -1,8 +1,9 @@
 # sample round config
 # all endowments can be specified either as a single number or a list of endowments, one for each player in each group
+# if an endowment list is shorter than the number of players in the group, endowments wrap back around to the beginning
 
-# number of players in each group
-players_per_group: 2
+# number of players in each group or null if there's only one group
+players_per_group: null
 # starting cash endowment for each player
 cash_endowment: 20
 # whether or not players are allowed to have negative available holdings
