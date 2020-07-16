@@ -123,14 +123,17 @@ class Player(markets_models.Player):
         return endowment * config.currency_scale
     
     def set_payoff(self):
+        config = self.subsession.config
         realized_state = self.group.realized_state
-        asset_structure = self.subsession.config.asset_structure
-        for asset_name, structure in asset_structure.items():
+        for asset_name, structure in config.asset_structure.items():
             if structure['is_etf']:
                 asset_value = 0
                 for component_asset, weight in structure['etf_weights'].items():
-                    asset_value += asset_structure[component_asset]['payoffs'][realized_state] * weight
+                    asset_value += config.asset_structure[component_asset]['payoffs'][realized_state] * weight
                 self.payoff += asset_value * self.settled_assets[asset_name]
             else:
                 asset_value = structure['payoffs'][realized_state]
                 self.payoff += asset_value * self.settled_assets[asset_name]
+        
+        # add cash gains/losses
+        self.payoff += (self.settled_cash - self.cash_endowment()) / config.currency_scale
