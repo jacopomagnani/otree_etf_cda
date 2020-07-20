@@ -62,20 +62,6 @@ class ETFConfig():
             cls.round_config_cache[round_config_name] = CacheEntry(entry=entry, mtime=mtime)
         return cls.round_config_cache[round_config_name].entry
     
-    @staticmethod
-    def _add_session_config_fields(session_config_row, round_config):
-        '''add keys from this row of the session config so that some params
-        can be changed without updating the round config. this might be a bad
-        idea, but I think it'd be convenient to be able to easily change stuff like period
-        length here'''
-        excluded_keys = ('round_config',)
-        cleaned_row = {
-            key: json.loads(value)
-            for key, value in session_config_row.items()
-            if key not in excluded_keys and value != ''
-        }
-        round_config.update(cleaned_row)
-
     @classmethod
     def get(cls, session_config_name, round_number):
         '''get an ETFConfig object given a specific session config name and round number'''
@@ -86,7 +72,6 @@ class ETFConfig():
         session_config_row = session_config[round_number-1]
         round_config_name = session_config_row['round_config']
         round_config = cls._get_round_config(round_config_name)
-        cls._add_session_config_fields(session_config_row, round_config)
         return cls(num_rounds, round_config)
 
     def __init__(self, num_rounds, round_data):

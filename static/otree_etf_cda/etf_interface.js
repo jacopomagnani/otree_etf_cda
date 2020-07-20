@@ -7,7 +7,8 @@ import '/static/otree_markets/simple_modal.js';
 import '/static/otree_markets/event_log.js';
 
 import './asset_cell.js';
-import './asset_table.js';
+import './holdings_table.js';
+import './payoff_table.js';
 import './currency_scaler.js';
 
 class ETFInterface extends PolymerElement {
@@ -57,20 +58,30 @@ class ETFInterface extends PolymerElement {
                     height: 30vh;
                 }
 
+                holdings-table, event-log, .payoffs {
+                    border: 1px solid black;
+                }
+
                 .info-container {
                     width: 100%;
                     height: 30vh;
                     display: flex;
-                    padding: 0 5px 0 5px;
                 }
-                .info-container > div {
-                    margin: 0 5px 0 5px;
-                }
-                .info-container > div:first-child {
-                    flex: 2 0 0;
-                }
-                .info-container > div:last-child {
+                .holdings-and-log {
+                    margin: 0 5px 0 1.33%;
                     flex: 1 0 0;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                holdings-table {
+                    margin-bottom: 5px;
+                }
+                event-log {
+                    flex: 1;
+                }
+                .payoffs {
+                    margin-right: 1.33%;
                 }
             </style>
 
@@ -112,10 +123,9 @@ class ETFInterface extends PolymerElement {
                     </template>
                 </div>
                 <div class="info-container">
-                    <div>
-                        <asset-table
+                    <div class="holdings-and-log">
+                        <holdings-table
                             asset-structure="[[assetStructure]]"
-                            state-probabilities="[[stateProbabilities]]"
                             time-remaining="[[timeRemaining]]"
                             settled-assets-dict="[[settledAssetsDict]]"
                             available-assets-dict="[[availableAssetsDict]]"
@@ -123,13 +133,18 @@ class ETFInterface extends PolymerElement {
                             available-cash="[[availableCash]]"
                             bids="[[bids]]"
                             asks="[[asks]]"
-                        ></asset-table>
-                    </div>
-                    <div>
+                        ></holdings-table>
                         <event-log
                             id="log"
                             max-entries=100
                         ></event-log>
+                    </div>
+                    <div class="payoffs">
+                        <payoff-table
+                            asset-structure="[[assetStructure]]"
+                            state-probabilities="[[stateProbabilities]]"
+                            asset-names="[[assetNames]]"
+                        ></payoff-table>
                     </div>
                 </div>
             </div>

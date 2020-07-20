@@ -1,4 +1,2 @@
-period_length,round_config
-120,demo.yaml
-,demo.yaml
-,demo.yaml
+round_config
+demo.yaml

@@ -32,6 +32,9 @@ class AssetCell extends PolymerElement {
                     margin: 0;
                     text-align: center;
                 }
+                order-list, trade-list {
+                    border: 1px solid black;
+                }
 
                 .list {
                     flex: 1;

@@ -9,7 +9,7 @@ cash_endowment: 20
 # whether or not players are allowed to have negative available holdings
 allow_short: false
 # the length of the round in seconds
-period_length: 100
+period_length: null
 # a multiplier used to change the way currency is displayed to players.
 # prices are integers, so all prices are divided by this number before being shown to players.
 # a scale of 1000 means that the smallest price a player can enter is 1/1000 or 0.001.
