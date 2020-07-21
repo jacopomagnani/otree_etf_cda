@@ -36,6 +36,9 @@ class ETFInterface extends PolymerElement {
     static get template() {
         return html`
             <style>
+                :host {
+                    --table-spacing: 10px;
+                }
                 * {
                     box-sizing: border-box;
                 }
@@ -58,30 +61,43 @@ class ETFInterface extends PolymerElement {
                     height: 30vh;
                 }
 
-                holdings-table, event-log, .payoffs {
+                .border {
                     border: 1px solid black;
                 }
 
-                .info-container {
-                    width: 100%;
-                    height: 30vh;
+                .flex-row {
                     display: flex;
+                    flex-direction: row;
                 }
-                .holdings-and-log {
-                    margin: 0 5px 0 1.33%;
-                    flex: 1 0 0;
+                .flex-row > :not(:first-child) {
+                    margin-left: var(--table-spacing);
+                }
+                .flex-col {
                     display: flex;
                     flex-direction: column;
                 }
-
-                holdings-table {
-                    margin-bottom: 5px;
+                .flex-col > :not(:first-child) {
+                    margin-top: var(--table-spacing);
                 }
-                event-log {
+                .flex-fill {
                     flex: 1;
                 }
-                .payoffs {
-                    margin-right: 1.33%;
+
+                .time-display {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .time-display span:last-child {
+                    display: inline-block;
+                    width: 2em;
+                }
+
+                .info-container {
+                    padding: 0 1.33% 0 1.33%;
+                    width: 100%;
+                    height: 30vh;
                 }
             </style>
 
@@ -122,24 +138,37 @@ class ETFInterface extends PolymerElement {
                         </div>
                     </template>
                 </div>
-                <div class="info-container">
-                    <div class="holdings-and-log">
-                        <holdings-table
-                            asset-structure="[[assetStructure]]"
-                            time-remaining="[[timeRemaining]]"
-                            settled-assets-dict="[[settledAssetsDict]]"
-                            available-assets-dict="[[availableAssetsDict]]"
-                            settled-cash="[[settledCash]]"
-                            available-cash="[[availableCash]]"
-                            bids="[[bids]]"
-                            asks="[[asks]]"
-                        ></holdings-table>
-                        <event-log
-                            id="log"
-                            max-entries=100
-                        ></event-log>
+                <div class="info-container flex-row">
+                    <div class="flex-col flex-fill">
+                        <div class="flex-row">
+                            <div class="border">
+                                <holdings-table
+                                    asset-structure="[[assetStructure]]"
+                                    settled-assets-dict="[[settledAssetsDict]]"
+                                    available-assets-dict="[[availableAssetsDict]]"
+                                    settled-cash="[[settledCash]]"
+                                    available-cash="[[availableCash]]"
+                                    bids="[[bids]]"
+                                    asks="[[asks]]"
+                                ></holdings-table>
+                            </div>
+                            <div class="border flex-fill">
+                            </div>
+                            <div class="border flex-fill time-display">
+                                <div>
+                                    <span>Time Remaining: </span>
+                                    <span>[[ timeRemaining ]]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border flex-fill">
+                            <event-log
+                                id="log"
+                                max-entries=100
+                            ></event-log>
+                        </div>
                     </div>
-                    <div class="payoffs">
+                    <div class="border">
                         <payoff-table
                             asset-structure="[[assetStructure]]"
                             state-probabilities="[[stateProbabilities]]"

@@ -9,7 +9,6 @@ class HoldingsTable extends PolymerElement {
     static get properties() {
         return {
             assetStructure: Object,
-            timeRemaining: Number,
             settledAssetsDict: Object,
             availableAssetsDict: Object,
             settledCash: Number,
@@ -74,22 +73,19 @@ class HoldingsTable extends PolymerElement {
                     height: 1.5em;
                 }
 
-                .cash-and-time {
+                .cash {
                     display: flex;
                 }
-                .cash-and-time > div {
+                .cash > div {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
-                }
-                .cash-and-time > :first-child {
-                    text-align: right;
-                }
-                .cash-and-time > :last-child {
-                    margin-left: 0.5em;
                     text-align: left;
                 }
-                .cash-and-time span {
+                .cash > :last-child {
+                    margin-left: 0.5em;
+                }
+                .cash span {
                     height: 1.5em;
                 }
             </style>
@@ -120,16 +116,14 @@ class HoldingsTable extends PolymerElement {
                         </div>
                     </template>
                 </div>
-                <div class="cash-and-time">
+                <div class="cash">
                     <div>
                         <span>Settled Cash:</span>
                         <span>Available Cash:</span>
-                        <span>Time Remaining:</span>
                     </div>
                     <div>
                         <span>$[[_currencyToHumanReadable(settledCash)]]</span>
                         <span>$[[_currencyToHumanReadable(availableCash)]]</span>
-                        <span>[[timeRemaining]]</span>
                     </div>
                 </div>
             </div>
