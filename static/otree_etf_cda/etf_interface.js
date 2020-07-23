@@ -9,6 +9,7 @@ import '/static/otree_markets/event_log.js';
 import './asset_cell.js';
 import './holdings_table.js';
 import './payoff_table.js';
+import './nav_display.js';
 import './currency_scaler.js';
 
 class ETFInterface extends PolymerElement {
@@ -36,9 +37,6 @@ class ETFInterface extends PolymerElement {
     static get template() {
         return html`
             <style>
-                :host {
-                    --table-spacing: 10px;
-                }
                 * {
                     box-sizing: border-box;
                 }
@@ -70,34 +68,40 @@ class ETFInterface extends PolymerElement {
                     flex-direction: row;
                 }
                 .flex-row > :not(:first-child) {
-                    margin-left: var(--table-spacing);
+                    margin-left: 10px;
                 }
                 .flex-col {
                     display: flex;
                     flex-direction: column;
                 }
                 .flex-col > :not(:first-child) {
-                    margin-top: var(--table-spacing);
+                    margin-top: 10px;
                 }
                 .flex-fill {
                     flex: 1;
+                    min-height: 0;
+                    min-width: 0;
                 }
 
                 .time-display {
                     display: flex;
-                    flex-direction: column;
                     justify-content: center;
                     align-items: center;
                 }
                 .time-display span:last-child {
                     display: inline-block;
-                    width: 2em;
+                    min-width: 3em;
                 }
 
                 .info-container {
                     padding: 0 1.33% 0 1.33%;
                     width: 100%;
                     height: 30vh;
+                }
+                .nav-container {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
                 }
             </style>
 
@@ -152,12 +156,19 @@ class ETFInterface extends PolymerElement {
                                     asks="[[asks]]"
                                 ></holdings-table>
                             </div>
-                            <div class="border flex-fill">
+                            <div class="border flex-fill nav-container">
+                                <template is="dom-repeat" items="{{assetNames}}" as="assetName" filter="_filter_etf_names">
+                                    <nav-display
+                                        asset-structure="[[assetStructure]]"
+                                        etf-asset-name="[[assetName]]"
+                                        trades='[[trades]]'
+                                    ></nav-display>
+                                </template>
                             </div>
                             <div class="border flex-fill time-display">
                                 <div>
                                     <span>Time Remaining: </span>
-                                    <span>[[ timeRemaining ]]</span>
+                                    <span>[[ _format_time_remaining(timeRemaining) ]]</span>
                                 </div>
                             </div>
                         </div>
@@ -182,6 +193,18 @@ class ETFInterface extends PolymerElement {
 
     _compute_asset_names(assetStructure) {
         return Object.keys(assetStructure);
+    }
+
+    _filter_etf_names(assetName) {
+        return this.get(['assetStructure', assetName]).is_etf;
+    }
+
+    _format_time_remaining(timeRemaining) {
+        if (typeof timeRemaining != "number") return '';
+        const minutes = '' + Math.floor(timeRemaining / 60)
+        let seconds = '' + timeRemaining % 60;
+        seconds = seconds.length == 1 ? '0' + seconds : seconds;
+        return `${minutes}:${seconds}`;
     }
 
     // triggered when this player enters an order

@@ -84,6 +84,7 @@ class HoldingsTable extends PolymerElement {
                 }
                 .cash > :last-child {
                     margin-left: 0.5em;
+                    min-width: 4em;
                 }
                 .cash span {
                     height: 1.5em;
