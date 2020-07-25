@@ -41,8 +41,9 @@ class Subsession(markets_models.Subsession):
         if self.round_number > self.config.num_rounds:
             return
         self.do_grouping()
-        for group in self.get_groups():
-            group.create_bots()
+        if self.config.bots_enabled:
+            for group in self.get_groups():
+                group.create_bots()
         return super().creating_session()
 
 

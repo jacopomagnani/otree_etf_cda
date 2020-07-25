@@ -15,6 +15,8 @@ period_length: 120
 # a scale of 1000 means that the smallest price a player can enter is 1/1000 or 0.001.
 # this should be a power of 10. it'd probably do weird things if it wasn't
 currency_scale: 1000
+# whether or not arbitrage bots are enabled
+bots_enabled: true
 
 # this field lists all the possible states and their relative probability of occuring.
 # the probability for each state is calculated as that state's prob_weight divided by
