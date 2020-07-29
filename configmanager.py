@@ -1,7 +1,5 @@
 from typing import Dict
-import csv
 import yaml
-import json
 import os.path
 from collections import namedtuple
 
@@ -11,15 +9,12 @@ CacheEntry = namedtuple('CacheEntry', ['entry', 'mtime'])
 class ETFConfig():
     '''this class manages configurations for the etf market experiment
     
-    it takes two types of config files: a "session config" CSV which defines the configuration for an entire session and a "round config"
+    it takes two types of config files: a "session config" text file which defines the configuration for an entire session and a "round config"
     YAML file which defines the configuration for a single round.
-    
-    the session config CSV only has one required column: "round_config". this column gives the name of the round config file used to configure that round.
-    optionally, other columns can be added to override values set in the round config. for example, adding a "period_length" column in the session config
-    and giving it a value in some row overrides the length of the period for that one round. this is convenient as it means that you don't have to rewrite
-    round configs for rounds with only a few simple differences between them. just a warning though, this probably won't work for the asset_structure or state
-    config fields.
 
+    the session config file is a simple text file which lists names of round configs. one round is run for each listed round config.
+    these files can also optionally contain comments on lines starting with "#".
+    
     the structure of the round config YAML files is complex. for a reference of all the required fields, just look at demo.yaml in configs/round_configs.
     '''
 
@@ -33,6 +28,12 @@ class ETFConfig():
     # is cleared and the new version of the config is retreived.
     session_config_cache: Dict[str, CacheEntry] = {}
     round_config_cache:   Dict[str, CacheEntry] = {}
+
+    @staticmethod
+    def _read_session_config_from_path(path):
+        with open(path) as infile:
+            lines = infile.read().splitlines()
+        return [l.strip() for l in lines if l.strip() != '' and not l.startswith('#')]
     
     @classmethod
     def _get_session_config(cls, session_config_name):
@@ -43,8 +44,7 @@ class ETFConfig():
             raise ValueError(f'session config "{session_config_name}" not found"') from e
 
         if session_config_name not in cls.session_config_cache or cls.session_config_cache[session_config_name].mtime < mtime:
-            with open(path) as infile:
-                entry = list(csv.DictReader(infile))
+            entry = cls._read_session_config_from_path(path)
             cls.session_config_cache[session_config_name] = CacheEntry(entry=entry, mtime=mtime)
         return cls.session_config_cache[session_config_name].entry
     
@@ -69,8 +69,7 @@ class ETFConfig():
         num_rounds = len(session_config)
         if round_number > num_rounds:
             return cls(num_rounds, None)
-        session_config_row = session_config[round_number-1]
-        round_config_name = session_config_row['round_config']
+        round_config_name = session_config[round_number-1]
         round_config = cls._get_round_config(round_config_name)
         return cls(num_rounds, round_config)
 
