@@ -6,8 +6,8 @@
 players_per_group: null
 # starting cash endowment for each player
 cash_endowment: 20
-# whether or not players are allowed to have negative available holdings
-allow_short: false
+# whether or not players are allowed to have negative available cash
+allow_short_cash: false
 # the length of the round in seconds
 period_length: 120
 # a multiplier used to change the way currency is displayed to players.
@@ -33,10 +33,11 @@ states:
 asset_structure:
   # name of the asset
   A:
+    allow_short: true
     # whether or not this is an etf asset
     is_etf: false
     # initial endowment of this asset
-    endowment: [10, 20]
+    endowment: [1, 2]
     # the state-dependent payoffs for this asset
     # only specified when asset ISN'T an etf
     payoffs:
@@ -44,13 +45,15 @@ asset_structure:
       Y: 1
       Z: 0
   B:
+    allow_short: false
     is_etf: false
-    endowment: [5, 15]
+    endowment: [1, 4]
     payoffs:
       X: 0
       Y: 2
       Z: 1
   C:
+    allow_short: false
     is_etf: false
     endowment: 5
     payoffs:
@@ -58,6 +61,7 @@ asset_structure:
       Y: 0
       Z: 2
   D:
+    allow_short: false
     is_etf: true
     endowment: 5
     # the component assets which compose this etf

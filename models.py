@@ -23,9 +23,6 @@ class Subsession(markets_models.Subsession):
     def asset_names(self):
         return list(self.config.asset_structure.keys())
     
-    def allow_short(self):
-        return self.config.allow_short
-
     def do_grouping(self):
         ppg = self.config.players_per_group
         # if ppg is None, just use the default grouping where everyone is in one group
@@ -98,6 +95,14 @@ class Group(markets_models.Group):
 
 
 class Player(markets_models.Player):
+
+    def check_available(self, is_bid, price, volume, asset_name):
+        config = self.subsession.config
+        if is_bid and config.allow_short_cash:
+            return True
+        elif not is_bid and config.asset_structure[asset_name]['allow_short']:
+            return True
+        return super().check_available(is_bid, price, volume, asset_name)
 
     def asset_endowment(self):
         endowments = {}
