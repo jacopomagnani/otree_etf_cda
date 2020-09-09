@@ -120,7 +120,7 @@ class Player(markets_models.Player):
     def cash_endowment(self):
         config = self.subsession.config
         if isinstance(config.cash_endowment, list):
-            index = (self.id_in_group-1) % len(endowment)
+            index = (self.id_in_group-1) % len(config.cash_endowment)
             endowment = int(config.cash_endowment[index])
         else:
             endowment = int(config.cash_endowment)
