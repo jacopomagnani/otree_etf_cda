@@ -142,4 +142,7 @@ class Player(markets_models.Player):
                 self.payoff += asset_value * self.settled_assets[asset_name]
         
         # add cash gains/losses
-        self.payoff += (self.settled_cash - self.cash_endowment()) / config.currency_scale
+        self.payoff += (self.settled_cash / config.currency_scale) - config.loan_value
+
+        if self.round_number != config.pay_round:
+            self.participant.payoff -= self.payoff

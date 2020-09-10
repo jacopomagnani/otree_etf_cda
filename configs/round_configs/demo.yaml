@@ -6,6 +6,8 @@
 players_per_group: null
 # starting cash endowment for each player
 cash_endowment: 20
+# the amount of the endowment which is a loan
+loan_value: 10
 # whether or not players are allowed to have negative available cash
 allow_short_cash: false
 # the length of the round in seconds
@@ -17,6 +19,8 @@ period_length: 120
 currency_scale: 1000
 # whether or not arbitrage bots are enabled
 bots_enabled: true
+# the round which is counted for final payoff
+pay_round: 2
 
 # this field lists all the possible states and their relative probability of occuring.
 # the probability for each state is calculated as that state's prob_weight divided by
