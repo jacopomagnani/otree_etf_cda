@@ -126,7 +126,7 @@ class Player(markets_models.Player):
             endowment = int(config.cash_endowment)
         # rescale cash endowment by currency scale so that config cash endowment
         # can be in human-readable form
-        return endowment * config.currency_scale
+        return (endowment + config.loan_value) * config.currency_scale
     
     def set_payoff(self):
         config = self.subsession.config
