@@ -1,3 +1,4 @@
+from .models import Subsession
 from django.contrib.contenttypes.models import ContentType
 from otree_markets.exchange.base import Trade, OrderStatusEnum
 
@@ -6,6 +7,8 @@ def get_csv_output(session):
     yield ['round_number', 'group_id', 'timestamp', 'price', 'asset', 'maker', 'taker', 'making_order_status', 'taking_order_status']
 
     for subsession in session.get_subsessions():
+        if not isinstance(subsession, Subsession):
+            continue
         config = subsession.config
         if subsession.round_number > config.num_rounds:
             continue
