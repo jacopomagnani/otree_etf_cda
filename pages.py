@@ -29,5 +29,11 @@ class Results(Page):
     def is_displayed(self):
         return self.round_number <= self.subsession.config.num_rounds
 
+    def vars_for_template(self):
+        final_cash = self.player.settled_cash / self.subsession.config.currency_scale
+        return {
+            'final_cash': final_cash,
+        }
+
 
 page_sequence = [Market, ResultsWaitPage, Results]

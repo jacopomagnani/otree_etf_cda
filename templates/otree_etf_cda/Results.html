@@ -6,11 +6,35 @@
 {% endblock %}
 
 {% block content %}
+    <table class="table">
+        <tr>
+            <th></th>
+            {% for asset_name in player.settled_assets.keys %}
+            <th scope="col">Asset {{ asset_name }}</th>
+            {% endfor %}
+            <th scope="col">Cash</th>
+        </tr>
+        <tr>
+            <th scope="row">Final Holdings</th>
+            {% for amount in player.settled_assets.values %}
+            <td>{{ amount}}</td>
+            {% endfor %}
+            <td>${{ final_cash }}</td>
+        </tr>
+    </table>
+
     <div>
-        Realized state: {{group.realized_state}}
+        <span class="font-weight-bold">Loan amount:</span>
+        <span>${{subsession.config.loan_value}}</span>
     </div>
     <div>
-        Your final payoff: {{player.payoff}}
+        <span class="font-weight-bold">Realized state:</span>
+        <span> {{group.realized_state}}</span>
     </div>
+    <div class="mb-4">
+        <span class="font-weight-bold">Your final payoff:</span>
+        <span>{{player.payoff}}</span>
+    </div>
+
     {% next_button %}
 {% endblock %}
