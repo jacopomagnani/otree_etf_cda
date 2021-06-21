@@ -9,7 +9,9 @@ cash_endowment: 20
 # the amount of the endowment which is a loan
 loan_value: 10
 # whether or not players are allowed to have negative available cash
-allow_short_cash: false
+allow_short_cash: true
+# the amount of cash that players are allowed to borrow when short selling
+short_limit_cash: 10
 # the length of the round in seconds
 period_length: 120
 # a multiplier used to change the way currency is displayed to players.
@@ -37,7 +39,11 @@ states:
 asset_structure:
   # name of the asset
   A:
+    # whether the player be allowed to hold negative quantities of this asset
     allow_short: true
+    # the maximum amount of this asset a player is allowed to borrow for short selling
+    # only specified when allow_short is true
+    short_limit: 10
     # whether or not this is an etf asset
     is_etf: false
     # initial endowment of this asset
@@ -49,7 +55,8 @@ asset_structure:
       Y: 1
       Z: 0
   B:
-    allow_short: false
+    allow_short: true
+    short_limit: 10
     is_etf: false
     endowment: [1, 4]
     payoffs:
@@ -61,7 +68,7 @@ asset_structure:
     is_etf: false
     endowment: 5
     payoffs:
-      X: 1
+      X: 10
       Y: 0
       Z: 2
   D:

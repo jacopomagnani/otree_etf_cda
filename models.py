@@ -98,9 +98,10 @@ class Player(markets_models.Player):
 
     def check_available(self, is_bid, price, volume, asset_name):
         config = self.subsession.config
-        if is_bid and config.allow_short_cash:
+        structure = config.asset_structure[asset_name]
+        if is_bid and config.allow_short_cash and self.available_cash - (price * volume) >= -config.short_limit_cash * config.currency_scale:
             return True
-        elif not is_bid and config.asset_structure[asset_name]['allow_short']:
+        elif not is_bid and structure['allow_short'] and self.available_assets[asset_name] - volume >= -structure['short_limit']:
             return True
         return super().check_available(is_bid, price, volume, asset_name)
 
