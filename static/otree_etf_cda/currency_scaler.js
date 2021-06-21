@@ -17,7 +17,7 @@ class CurrencyScaler extends PolymerElement {
     ready() {
         super.ready();
         if (this.hasAttribute('factor'))
-            _factor = this.getAttribute('factor');
+            _factor = parseInt(this.getAttribute('factor'));
     }
 
     get factor() {
