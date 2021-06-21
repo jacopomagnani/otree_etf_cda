@@ -79,15 +79,17 @@ class ETFMakerBot(BaseBot):
             self.reevaluate_ask_position()
 
     def on_trade(self, trade):
+        my_order = None
         if trade.taking_order.pcode == self.pcode:
-            return
-
-        try:
-            my_making_order = trade.making_orders.get(pcode=self.pcode)
-        except Order.DoesNotExist:
-            pass
+            my_order = trade.taking_order
         else:
-            if my_making_order.is_bid:
+            try:
+                my_order = trade.making_orders.get(pcode=self.pcode)
+            except Order.DoesNotExist:
+                pass
+
+        if my_order is not None:
+            if my_order.is_bid:
                 self.active_bid_id = None
                 self.bid_position = None
             else:
@@ -98,7 +100,7 @@ class ETFMakerBot(BaseBot):
             for component_asset, weight in self.etf_composition.items():
                 exchange = self.group.exchanges.get(asset_name=component_asset)
                 for _ in range(weight):
-                    exchange.enter_market_order(1, not my_making_order.is_bid, self.pcode)
+                    exchange.enter_market_order(1, not my_order.is_bid, self.pcode)
             
         self.reevaluate_bid_position()
         self.reevaluate_ask_position()
