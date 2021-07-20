@@ -21,7 +21,7 @@ You'll know it worked if the text "(etf_venv)" appears at the beginning of your 
 2. __Installing Dependencies__
 
 ```bash
-pip install otree otree-redwood pyyaml
+pip install 'otree<5' otree-redwood pyyaml
 ```
 
 3. __Create a new oTree project__
