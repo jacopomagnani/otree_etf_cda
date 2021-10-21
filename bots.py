@@ -79,6 +79,11 @@ class ETFMakerBot(BaseBot):
             self.reevaluate_ask_position()
 
     def on_trade(self, trade):
+        if trade.exchange.asset_name != self.etf_name:
+            self.reevaluate_bid_position()
+            self.reevaluate_ask_position()
+            return
+
         my_order = None
         if trade.taking_order.pcode == self.pcode:
             my_order = trade.taking_order
