@@ -71,12 +71,4 @@ asset_structure:
       X: 10
       Y: 0
       Z: 2
-  D:
-    allow_short: false
-    is_etf: true
-    endowment: 5
-    # the component assets which compose this etf
-    # only specified when asset IS an etf
-    etf_weights:
-      A: 1
-      B: 2
+  
