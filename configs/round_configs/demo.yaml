@@ -29,13 +29,13 @@ pay_round: 2
 # the sum of prob_weight across all states
 states:
   X:
-    prob_weight: 1
+    prob_weight: 25
   Y:
-    prob_weight: 2
+    prob_weight: 25
   Z:
-    prob_weight: 3
+    prob_weight: 475
   W:
-    prob_weight: 3
+    prob_weight: 475
 
 # this field describes the asset structure for the round
 asset_structure:
@@ -53,20 +53,20 @@ asset_structure:
     # the state-dependent payoffs for this asset
     # only specified when asset ISN'T an etf
     payoffs:
-      X: 2
-      Y: 1
-      Z: 0
-      W: 2
+      X: 318
+      Y: 318
+      Z: 89
+      W: 89
   B:
     allow_short: false
     short_limit: 10
     is_etf: false
     endowment: [1, 4]
     payoffs:
-      X: 0
-      Y: 2
-      Z: 1
-      W: 3
+      X: 120
+      Y: 80
+      Z: 120
+      W: 80
   C:
     allow_short: true
     short_limit: 10
