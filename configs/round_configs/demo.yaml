@@ -34,6 +34,8 @@ states:
     prob_weight: 2
   Z:
     prob_weight: 3
+  W:
+    prob_weight: 3
 
 # this field describes the asset structure for the round
 asset_structure:
@@ -54,6 +56,7 @@ asset_structure:
       X: 2
       Y: 1
       Z: 0
+      W: 2
   B:
     allow_short: false
     short_limit: 10
@@ -63,13 +66,15 @@ asset_structure:
       X: 0
       Y: 2
       Z: 1
+      W: 3
   C:
     allow_short: true
     short_limit: 10
     is_etf: false
     endowment: 5
     payoffs:
-      X: 10
-      Y: 0
-      Z: 2
+      X: 1
+      Y: 1
+      Z: 1
+      W: 1
 
