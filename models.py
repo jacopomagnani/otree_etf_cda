@@ -17,7 +17,7 @@ class Subsession(markets_models.Subsession):
 
     @property
     def config(self):
-        config_name = self.session.config['session_config_name']
+        config_name = self.session.config['session_config']
         return ETFConfig.get(config_name, self.round_number)
     
     def asset_names(self):
