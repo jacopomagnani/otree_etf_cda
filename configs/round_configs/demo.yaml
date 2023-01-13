@@ -20,7 +20,7 @@ period_length: 120
 # this should be a power of 10. it'd probably do weird things if it wasn't
 currency_scale: 1000
 # whether or not arbitrage bots are enabled
-bots_enabled: true
+bots_enabled: false
 # the round which is counted for final payoff
 pay_round: 2
 
@@ -40,7 +40,7 @@ asset_structure:
   # name of the asset
   A:
     # whether the player be allowed to hold negative quantities of this asset
-    allow_short: true
+    allow_short: false
     # the maximum amount of this asset a player is allowed to borrow for short selling
     # only specified when allow_short is true
     short_limit: 10
@@ -55,7 +55,7 @@ asset_structure:
       Y: 1
       Z: 0
   B:
-    allow_short: true
+    allow_short: false
     short_limit: 10
     is_etf: false
     endowment: [1, 4]
@@ -64,11 +64,12 @@ asset_structure:
       Y: 2
       Z: 1
   C:
-    allow_short: false
+    allow_short: true
+    short_limit: 10
     is_etf: false
     endowment: 5
     payoffs:
       X: 10
       Y: 0
       Z: 2
-  
+
